@@ -1,0 +1,60 @@
+version: "3"
+services:
+    react-client:
+        image: react-docker
+        ports:
+            - "3000:3000"
+        stdin_open: true
+        networks: 
+            - docker-app
+        
+    express-server:
+        image: express-docker
+        ports:
+            - "9001:9001"
+        depends_on: 
+            - mysql-database
+            # - postgres-database
+        networks: 
+            - docker-app
+
+    mysql-database:
+        image: mysql:latest
+        # image: mysql:8.0
+        ports:
+            - "3306:3306"
+            - "3307:3307"
+        networks: 
+            - docker-app
+        # command: --init-file /data/application/init.sql
+        volumes: 
+            - mysql-data:/var/lib/mysql
+            # - ./init.sql:/data/application/init.sql
+            - ./init_scripts:/docker-entrypoint-initdb.d
+        environment: 
+            MYSQL_DATABASE: "jiratech_users_db"
+            MYSQL_USER: "jiratech_user"
+            MYSQL_PASSWORD: "jiratech_password"
+            MYSQL_ROOT_PASSWORD: "root_jiratech_password"
+            # MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+
+    # postgres-database:
+    #     image: postgres
+    #     environment: 
+    #         POSTGRES_PASSWORD: jiratech_password
+    #         POSTGRES_USER: jiratech_user
+    #         POSTGRES_DB: jiratech_users_db
+    #     volumes:
+    #         - ./pgdata:/var/lib/postgresql/data
+    #     ports: 
+    #         - '5432:5432'
+
+        
+networks: 
+    docker-app:
+        driver: bridge
+volumes: 
+    mysql-data:
+        driver: local
+    # postgres-data:
+    #     driver: local
